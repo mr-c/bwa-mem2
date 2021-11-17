@@ -32,6 +32,8 @@ ifneq ($(portable),)
 	STATIC_GCC=-static-libgcc -static-libstdc++
 endif
 
+uname_arch := $(shell uname -m)
+
 EXE=		bwa-mem2
 #CXX=		icpc
 ifeq ($(CXX), icpc)
@@ -42,7 +44,13 @@ endif
 ARCH_FLAGS=	-msse -msse2 -msse3 -mssse3 -msse4.1
 MEM_FLAGS=	-DSAIS=1
 CPPFLAGS+=	-DENABLE_PREFETCH -DV17=1 -DMATE_SORT=0 $(MEM_FLAGS) 
-INCLUDES=   -Isrc -Iext/safestringlib/include -Iext/simde
+
+ifneq ($(uname_arch),aarch64)
+	INCLUDES=   -Isrc -Iext/safestringlib/include
+else 
+	INCLUDES=   -Isrc -Iext/safestringlib/include -Iext/simde
+endif
+
 LIBS=		-lpthread -lm -lz -L. -lbwa -Lext/safestringlib -lsafestring $(STATIC_GCC)
 OBJS=		src/fastmap.o src/bwtindex.o src/utils.o src/memcpy_bwamem.o src/kthread.o \
 			src/kstring.o src/ksw.o src/bntseq.o src/bwamem.o src/profiling.o src/bandedSWA.o \
@@ -81,6 +89,12 @@ else ifeq ($(arch),avx512)
 	else	
 		ARCH_FLAGS=-mavx512bw
 	endif
+else ifeq ($(arch),aarch64)
+	ARCH_FLAGS="-march=native"
+	CXX_FLAGS="-D__SSE2__=1 -D__AVX__=1 -Ofast -O3 -g -march=native -fpermissive"
+else ifeq ($(uname_arch),aarch64)
+	ARCH_FLAGS="-march=native"
+	CXX_FLAGS="-D__SSE2__=1 -D__AVX__=1 -Ofast -O3 -g -march=native -fpermissive"
 else ifeq ($(arch),native)
 	ARCH_FLAGS=-march=native
 else ifneq ($(arch),)
