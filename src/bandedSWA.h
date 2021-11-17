@@ -46,7 +46,7 @@ Authors: Vasimuddin Md <vasimuddin.md@intel.com>; Sanchit Misra <sanchit.misra@i
 #if (__AVX512BW__ || __AVX2__)
 #include <immintrin.h>
 #else
-#include <simde/x86/sse4.1.h>  // for SSE4.1
+#include <x86/sse4.1.h>  // for SSE4.1
 #define __mmask8 uint8_t
 #define __mmask16 uint16_t
 #endif
