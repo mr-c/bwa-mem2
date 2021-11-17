@@ -90,13 +90,13 @@ else ifeq ($(arch),avx512)
 		ARCH_FLAGS=-mavx512bw
 	endif
 else ifeq ($(arch),aarch64)
-	ARCH_FLAGS="-march=native"
-	CXX_FLAGS="-D__SSE2__=1 -D__AVX__=1 -Ofast -O3 -g -march=native -fpermissive"
-else ifeq ($(uname_arch),aarch64)
-	ARCH_FLAGS="-march=native"
-	CXX_FLAGS="-D__SSE2__=1 -D__AVX__=1 -Ofast -O3 -g -march=native -fpermissive"
+	ARCH_FLAGS=-march=native -D__SSE2__=1 -D__AVX__=1
 else ifeq ($(arch),native)
+	ifeq ($(uname_arch),aarch64)
+	ARCH_FLAGS=-march=native -D__SSE2__=1 -D__AVX__=1
+	else
 	ARCH_FLAGS=-march=native
+	endif
 else ifneq ($(arch),)
 # To provide a different architecture flag like -march=core-avx2.
 	ARCH_FLAGS=$(arch)
