@@ -101,7 +101,11 @@ else ifneq ($(arch),)
 # To provide a different architecture flag like -march=core-avx2.
 	ARCH_FLAGS=$(arch)
 else
-myall:multi
+	ifeq ($(uname_arch),aarch64)
+		ARCH_FLAGS=-march=native -D__SSE2__=1 -D__AVX__=1
+	else
+		myall:multi
+	endif
 endif
 
 CXXFLAGS+=	-g -O3 -fpermissive $(ARCH_FLAGS) #-Wall ##-xSSE2
