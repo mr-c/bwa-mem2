@@ -115,13 +115,13 @@ else
 	endif
 endif
 
-CXXFLAGS+=	-g -O3 -fpermissive $(ARCH_FLAGS) #-Wall ##-xSSE2
+CXXFLAGS=-g -O3 -fpermissive #-Wall ##-xSSE2
 
 .PHONY:all clean depend multi
 .SUFFIXES:.cpp .o
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $(INCLUDES) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(ARCH_FLAGS) $(CPPFLAGS) $(INCLUDES) $< -o $@
 
 all:$(EXE)
 
