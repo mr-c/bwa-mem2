@@ -45,11 +45,12 @@ ARCH_FLAGS=	-msse -msse2 -msse3 -mssse3 -msse4.1
 MEM_FLAGS=	-DSAIS=1
 CPPFLAGS+=	-DENABLE_PREFETCH -DV17=1 -DMATE_SORT=0 $(MEM_FLAGS) 
 
-ifneq ($(uname_arch),aarch64)
-	INCLUDES=   -Isrc -Iext/safestringlib/include
-else 
-	INCLUDES=   -Isrc -Iext/safestringlib/include -Iext/simde
-endif
+INCLUDES=   -Isrc -Iext/safestringlib/include
+
+SIMDE_ARCH_FLAGS=-D__SSE2__=1 -D__AVX__=1
+SIMDE_INCLUDES=-Iext/simde
+
+
 
 LIBS=		-lpthread -lm -lz -L. -lbwa -Lext/safestringlib -lsafestring $(STATIC_GCC)
 OBJS=		src/fastmap.o src/bwtindex.o src/utils.o src/memcpy_bwamem.o src/kthread.o \
@@ -90,19 +91,26 @@ else ifeq ($(arch),avx512)
 		ARCH_FLAGS=-mavx512bw
 	endif
 else ifeq ($(arch),aarch64)
-	ARCH_FLAGS=-march=native -D__SSE2__=1 -D__AVX__=1
+	ARCH_FLAGS=-march=armv8.1 $(SIMDE_ARCH_FLAGS)
+	INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
 else ifeq ($(arch),native)
 	ifeq ($(uname_arch),aarch64)
-	ARCH_FLAGS=-march=native -D__SSE2__=1 -D__AVX__=1
+		ARCH_FLAGS=-march=native $(SIMDE_ARCH_FLAGS)
+		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
 	else
-	ARCH_FLAGS=-march=native
+		ARCH_FLAGS=-march=native
 	endif
 else ifneq ($(arch),)
 # To provide a different architecture flag like -march=core-avx2.
 	ARCH_FLAGS=$(arch)
+	if ($(uname_arch),aarch64) # such as -march=armv8.2
+		ARCH_FLAGS=-march=$(arch) $(SIMDE_ARCH_FLAGS)
+		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
+	endif
 else
 	ifeq ($(uname_arch),aarch64)
-		ARCH_FLAGS=-march=native -D__SSE2__=1 -D__AVX__=1
+		ARCH_FLAGS=$(SIMDE_ARCH_FLAGS)
+		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
 	else
 		myall:multi
 	endif
