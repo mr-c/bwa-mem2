@@ -101,9 +101,8 @@ else ifeq ($(arch),native)
 		ARCH_FLAGS=-march=native
 	endif
 else ifneq ($(arch),)
-# To provide a different architecture flag like -march=core-avx2.
-	ARCH_FLAGS=$(arch)
-	if ($(uname_arch),aarch64) # such as -march=armv8.2
+# To provide a different architecture flag like -march=core-avx2 or  -march=armv8.2
+	ifeq ($(uname_arch),aarch64)
 		ARCH_FLAGS=-march=$(arch) $(SIMDE_ARCH_FLAGS)
 		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
 	endif
