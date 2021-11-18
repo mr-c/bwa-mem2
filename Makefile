@@ -92,11 +92,11 @@ else ifeq ($(arch),avx512)
 	endif
 else ifeq ($(arch),aarch64)
 	ARCH_FLAGS=-march=armv8.1 $(SIMDE_ARCH_FLAGS)
-	INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
+	INCLUDES+= $(SIMDE_INCLUDES)
 else ifeq ($(arch),native)
 	ifeq ($(uname_arch),aarch64)
 		ARCH_FLAGS=-march=native $(SIMDE_ARCH_FLAGS)
-		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
+		INCLUDES+= $(SIMDE_INCLUDES)
 	else
 		ARCH_FLAGS=-march=native
 	endif
@@ -104,12 +104,12 @@ else ifneq ($(arch),)
 # To provide a different architecture flag like -march=core-avx2 or  -march=armv8.2
 	ifeq ($(uname_arch),aarch64)
 		ARCH_FLAGS=-march=$(arch) $(SIMDE_ARCH_FLAGS)
-		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
+		INCLUDES+= $(SIMDE_INCLUDES)
 	endif
 else
 	ifeq ($(uname_arch),aarch64)
 		ARCH_FLAGS=$(SIMDE_ARCH_FLAGS)
-		INCLUDES=$(INCLUDES) $(SIMDE_INCLUDES)
+		INCLUDES+= $(SIMDE_INCLUDES)
 	else
 		myall:multi
 	endif
