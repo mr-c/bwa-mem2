@@ -32,6 +32,8 @@ ifneq ($(portable),)
 	STATIC_GCC=-static-libgcc -static-libstdc++
 endif
 
+uname_arch := $(shell uname -m)
+
 EXE=		bwa-mem2
 #CXX=		icpc
 ifeq ($(CXX), icpc)
@@ -42,7 +44,14 @@ endif
 ARCH_FLAGS=	-msse -msse2 -msse3 -mssse3 -msse4.1
 MEM_FLAGS=	-DSAIS=1
 CPPFLAGS+=	-DENABLE_PREFETCH -DV17=1 -DMATE_SORT=0 $(MEM_FLAGS) 
-INCLUDES=   -Isrc -Iext/safestringlib/include -Iext/simde
+
+INCLUDES=   -Isrc -Iext/safestringlib/include
+
+SIMDE_ARCH_FLAGS=-D__SSE2__=1 -D__AVX__=1
+SIMDE_INCLUDES=-Iext/simde
+
+
+
 LIBS=		-lpthread -lm -lz -L. -lbwa -Lext/safestringlib -lsafestring $(STATIC_GCC)
 OBJS=		src/fastmap.o src/bwtindex.o src/utils.o src/memcpy_bwamem.o src/kthread.o \
 			src/kstring.o src/ksw.o src/bntseq.o src/bwamem.o src/profiling.o src/bandedSWA.o \
@@ -81,22 +90,38 @@ else ifeq ($(arch),avx512)
 	else	
 		ARCH_FLAGS=-mavx512bw
 	endif
+else ifeq ($(arch),aarch64)
+	ARCH_FLAGS=-march=armv8.1-a $(SIMDE_ARCH_FLAGS)
+	INCLUDES+= $(SIMDE_INCLUDES)
 else ifeq ($(arch),native)
-	ARCH_FLAGS=-march=native
+	ifeq ($(uname_arch),aarch64)
+		ARCH_FLAGS=-march=native $(SIMDE_ARCH_FLAGS)
+		INCLUDES+= $(SIMDE_INCLUDES)
+	else
+		ARCH_FLAGS=-march=native
+	endif
 else ifneq ($(arch),)
-# To provide a different architecture flag like -march=core-avx2.
-	ARCH_FLAGS=$(arch)
+# To provide a different architecture flag like -march=core-avx2 or  -march=armv8.2-a
+	ifeq ($(uname_arch),aarch64)
+		ARCH_FLAGS=-march=$(arch) $(SIMDE_ARCH_FLAGS)
+		INCLUDES+= $(SIMDE_INCLUDES)
+	endif
 else
-myall:multi
+	ifeq ($(uname_arch),aarch64)
+		ARCH_FLAGS=$(SIMDE_ARCH_FLAGS)
+		INCLUDES+= $(SIMDE_INCLUDES)
+	else
+		myall:multi
+	endif
 endif
 
-CXXFLAGS+=	-g -O3 -fpermissive $(ARCH_FLAGS) #-Wall ##-xSSE2
+CXXFLAGS=-g -O3 -fpermissive #-Wall ##-xSSE2
 
 .PHONY:all clean depend multi
 .SUFFIXES:.cpp .o
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $(INCLUDES) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(ARCH_FLAGS) $(CPPFLAGS) $(INCLUDES) $< -o $@
 
 all:$(EXE)
 

@@ -35,7 +35,7 @@ Authors: Sanchit Misra <sanchit.misra@intel.com>; Vasimuddin Md <vasimuddin.md@i
 #include <stdint.h>
 #include <string.h>
 #define SIMDE_ENABLE_NATIVE_ALIASES
-#include <simde/x86/avx2.h>
+#include <x86/avx2.h>
 #include <limits.h>
 #include <fstream>
 
